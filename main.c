@@ -39,19 +39,19 @@
 #include "md5.h"
 
 // 必须修改，帐号密码和 mac 地址是绑定的
-char user[] = "120212322";
-char pass[] = "233333";
-unsigned char hostip[4]={10,10,10,10};
-unsigned char dhcpip[4]={10,100,10,10};
+char user[] = "1502000744";
+char pass[] = "19960314";
+unsigned char hostip[4]={10,207,56,21};
+unsigned char dhcpip[4]={10,207,56,254};
 
-uint64_t mac = 0x6036ddeabcde; // echo 0x`ifconfig eth | egrep -io "([0-9a-f]{2}:){5}[0-9a-f]{2}" | tr -d ":"`
+uint64_t mac = 0x2c56dc17b2de; // echo 0x`ifconfig eth | egrep -io "([0-9a-f]{2}:){5}[0-9a-f]{2}" | tr -d ":"`
 
 //配合d_generic＝1使用，必须修改
 char keep_alive_version[2] ={0xdc,0x02};
-char auth_version[2] ={0x25,0x00};
+char auth_version[2] ={0x0a,0x00};
 char ipdog[1]={0x01};
 char ccs[1]={0x20};
-char adpnum[1]={0x08};
+char adpnum[1]={0x04};
 
 
 // 不一定要修改
@@ -64,7 +64,7 @@ int os_len = sizeof(os) - 1;
 
 // TODO 增加从文件读取参数
 
-#define SERVER_ADDR "10.1.1.10"
+#define SERVER_ADDR "10.10.4.110"
 #define SERVER_PORT 61440
 
 #define RECV_DATA_SIZE 1000
@@ -153,7 +153,8 @@ void challenge(int sock, struct sockaddr_in serv_addr, unsigned char *clg_data, 
         set_challenge_data(clg_data, clg_data_len, challenge_try);                                                          //生成challenge_dat数据
         if(INTERFACE ==1)
          printf("[debug]challenge packet make !\n");
-        fprintf(stderr,"%s",clg_data);
+        //fprintf(stderr,"%s",clg_data);
+printf("%s",clg_data);
         challenge_try++;                                                                                                    //尝试次数自加
         ret = sendto(sock, clg_data, clg_data_len, 0, (struct sockaddr *)&serv_addr, sizeof(serv_addr));                    //将字符串发送给server,,,ret=sendto(已建立的连接，clg包，clg包长度，flags设0不变，sockaddr结构体，前者长度)
         if (ret != clg_data_len) {                                                                                          //ret不等于clg_data长度报错
@@ -543,6 +544,7 @@ void logout_signal(int signum)
 int main(int argc, char **argv)
     {
         printf("DR.COM TEST!\n");
+        FILE *stderr = fopen("test.txt", "wb");
         int sock,alive_count=0;//定义整形变量sock和ret
         //long ret;
         unsigned char send_data[SEND_DATA_SIZE];                   //定义无符号字符串send_data[1000]  长度为1000

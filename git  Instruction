@@ -1,0 +1,8 @@
+git init
+git add README.md
+git add .
+git commit -m 'xxxx'
+git remote add https://github.com/akunos/drcom.git
+git pull origin master
+git push origin master
+

@@ -96,7 +96,7 @@ void de(unsigned char *data,int offset,int len)//
 {   int i=0;
     printf("\n");
     {for (i=0;i<len;i++)
-        
+
         printf("%02x ",data[offset+i]);
         if(i/16==0)
             printf("\n");
@@ -153,7 +153,7 @@ void challenge(int sock, struct sockaddr_in serv_addr, unsigned char *clg_data, 
         set_challenge_data(clg_data, clg_data_len, challenge_try);                                                          //生成challenge_dat数据
         if(INTERFACE ==1)
          printf("[debug]challenge packet make !\n");
-        //fprintf(stderr,"%s",clg_data);
+         fprintf(stderr,"%s",clg_data);
 printf("%s",clg_data);
         challenge_try++;                                                                                                    //尝试次数自加
         ret = sendto(sock, clg_data, clg_data_len, 0, (struct sockaddr *)&serv_addr, sizeof(serv_addr));                    //将字符串发送给server,,,ret=sendto(已建立的连接，clg包，clg包长度，flags设0不变，sockaddr结构体，前者长度)
@@ -185,17 +185,17 @@ void set_login_data(struct user_info_pkt *user_info, unsigned char *login_data, 
     static unsigned char md5_str[16];                                 //定义无符号字符串 md5_str[16]
     unsigned char md5_str_tmp[1000];                           //定义无符号字符串 md5_str_tmp[1000]
     int md5_str_len;
-    
+
     int data_index = 0;                                       //data_index初始化
-    
+
     memset(login_data, 0x00, login_data_len);
-    
+
     /* magic 3 byte, username_len 1 byte 4位 */
     login_data[data_index++] = 0x03;
     login_data[data_index++] = 0x01;
     login_data[data_index++] = 0x00;
     login_data[data_index++] = (unsigned char)(user_info->username_len + 20);    //ASCII值转字符串（字符串长度（账号）+20）
-    
+
     /* md5 0x03 0x01 salt password 16位*/
     md5_str_len = 2 + salt_len + user_info->password_len;                        //MD5_1   md5_str长度为2+4+密码长度
     memset(md5_str_tmp, 0x00, md5_str_len);                                      //将md5_str_tmp的前md5_str_len位全部置0x00
@@ -206,18 +206,18 @@ void set_login_data(struct user_info_pkt *user_info, unsigned char *login_data, 
     MD5(md5_str_tmp, md5_str_len, md5_str);
     memcpy(login_data + data_index, md5_str, 16);                                    //向data_index中添加16位的md5_str
     data_index += 16;
-  
-    
+
+
     /* user name 36位 */
     memcpy(login_data + data_index, user_info->username, user_info->username_len);
     data_index += 36;       //用户名ASCII码先填入logindata+data_index偏移量位置，然后强艹data_index为36
-   
+
     /* ccs ada 2位*/
     memcpy(login_data+data_index,ccs,1);
     data_index += 1;                                                //CONTROLCHECKSTATUS
     memcpy(login_data+data_index,adpnum,1);
     data_index += 1;                                                   //ADAPTERNUM
-    
+
     /* (data[4:10].encode('hex'),16)^mac */
     uint64_t sum = 0;
     for (i = 0; i < 6; i++) {
@@ -229,7 +229,7 @@ void set_login_data(struct user_info_pkt *user_info, unsigned char *login_data, 
         sum /= 256;
     }
     data_index += 6;
-    
+
     /* md5 0x01 pwd salt 0x00 0x00 0x00 0x00 */
     md5_str_len = 1 + user_info->password_len + salt_len + 4;                        //MD5_2    长度为1+密码长度+salt长度+4个零位
     memset(md5_str_tmp, 0x00, md5_str_len);                                          //MD5temp区前md5_str_len清零
@@ -239,14 +239,14 @@ void set_login_data(struct user_info_pkt *user_info, unsigned char *login_data, 
     MD5(md5_str_tmp, md5_str_len, md5_str);                                          //计算MD5_2,赋值到md5_str
     memcpy(login_data + data_index, md5_str, 16);                                    //拷贝16位的MD5_2到logindata+偏移量
     data_index += 16;                                                                //偏移量+16
-    
+
     /* 0x01 hexip 0x00*12 */
     login_data[data_index++] = 0x01;
     memcpy(login_data+data_index,hostip,4);
     data_index += 16;
     //printf("len:%d",data_index);
     //de(login_data,0,data_index);
-    
+
     /* md5 login_data[0-data_index] 0x14 0x00 0x07 0x0b 8 bytes */
     md5_str_len = data_index + 4; //MD5_3    长度为偏移量+4
     //printf("\nmd5_str_len:%d",md5_str_len);
@@ -271,30 +271,30 @@ void set_login_data(struct user_info_pkt *user_info, unsigned char *login_data, 
     {
         login_data[data_index++] = 0x01;                                                  //IPDOG
     }
-    
+
     data_index += 4;
-   
+
     /* hostname */
     i = user_info->hostname_len > 32 ? 32 : user_info->hostname_len;                  //这一段拷贝Hostname,用i表示长度，偏移量+32
     memcpy(login_data + data_index, user_info->hostname, i);
     data_index += 32;
-    
+
     /* primary dns: 114.114.114.114 */
     login_data[data_index++] = 0x72;
     login_data[data_index++] = 0x72;
     login_data[data_index++] = 0x72;
     login_data[data_index++] = 0x72;
-    
+
     /* dhcp */
     memcpy(login_data+data_index,dhcpip,4);
     data_index += 4;
-    
+
     /* second dns */
     login_data[data_index++] = 0x08;
     login_data[data_index++] = 0x08;
     login_data[data_index++] = 0x08;
     login_data[data_index++] = 0x08;
-    
+
     /*乱七八糟并不懂 */
     data_index += 8;
     login_data[data_index++] = 0x94;
@@ -308,13 +308,13 @@ void set_login_data(struct user_info_pkt *user_info, unsigned char *login_data, 
     data_index += 2;
     login_data[data_index++] = 0x02;
     data_index += 3;
-    
+
     /* host_os.ljust(32,'\x00') 128 */
     i = user_info->os_name_len > 32 ? 32 : user_info->os_name_len;
     memcpy(login_data + data_index, user_info->os_name, i);
     data_index += 32;
     data_index += 96;
-    
+
     /* auth version */
 
     if(D_GENERIC ==1)
@@ -327,11 +327,11 @@ void set_login_data(struct user_info_pkt *user_info, unsigned char *login_data, 
         login_data[data_index++] = 0x0a;
         login_data[data_index++] = 0x00;
     }
-    
+
     /* 0x02 0x0c */
     login_data[data_index++] = 0x02;
     login_data[data_index++] = 0x0c;
-    
+
     /* checksum point 4*/
     int check_point = data_index;                           //定义check_point为偏移量，方便一会儿覆盖数据，然后给logindata加'\x01\x26\x07\x11\x00\x00'+dump(mac)
     login_data[data_index++] = 0x01;
@@ -346,17 +346,17 @@ void set_login_data(struct user_info_pkt *user_info, unsigned char *login_data, 
         mac /= 256;
     }
     data_index += 6;
-    
+
     sum = 1234;
     uint64_t check = 0;                                                        //定义check为0
     for (i = 0; i < data_index; i += 4) {
 		    		check = 0;
 		    		for (j = 0; j < 4; j++) {
                         check = check * 256 + (int)login_data[i + j];
-                        
+
                     }
 		    		sum ^= check;
-        
+
     }
     sum = (1968 * sum) & 0xFFFFFFFF;
     for (j = 0; j < 4; j++) {
@@ -373,7 +373,7 @@ void set_login_data(struct user_info_pkt *user_info, unsigned char *login_data, 
     printf("[DEBUG]login packet is:");
     de(login_data,0,data_index);
     }
-    
+
 }
 
 
@@ -411,7 +411,8 @@ void login1(int sock, struct sockaddr_in serv_addr, unsigned char *login_data, i
     fprintf(stdout, "[drcom-login]: login success!\n");                                                               //只有当首字符为04提示登陆成功
 }
 
-void set_alive1_data(unsigned char *alive_data1, int alive_data1_len, unsigned char *tail, unsigned char *salt,int salt_len,struct user_info_pkt *user_info,unsigned char *md5_str)
+void set_alive1_data(unsigned char *alive_data1, int alive_data1_len, unsigned char *tail, unsigned char *salt,int salt_len,struct user_info_pkt *user_info,
+                    unsigned char *md5_str)
 //set_alive_data1(send_data, alive1_data_len, package_tail, globle_salt,4,&user_info);
 {
     memset(alive_data1, 0x00, alive_data1_len);
@@ -423,26 +424,30 @@ void set_alive1_data(unsigned char *alive_data1, int alive_data1_len, unsigned c
          printf("\n[DEBUG]timep=%ld\n",*timep);
     memset(alive_data1, 0x00, alive_data1_len);
     alive_data1[i++] = 0xff;
-    //if(D_GENERIC ==1)
-    //{
-    //int md5_str_len,j=0;
-    //memset(md5_str,0x00,16);
-    //unsigned char md5_str_tmp[1000];
-    //md5_str_len = 2 + salt_len + user_info->password_len;
-    //memset(md5_str_tmp, 0x00, md5_str_len);
-    //md5_str_tmp[j++] = 0x03;
-    //md5_str_tmp[j++] = 0x01;
-    //memcpy(md5_str_tmp + j, salt,salt_len);
-    //memcpy(md5_str_tmp + j + salt_len, user_info->password, user_info->password_len);
-    //MD5(md5_str_tmp, md5_str_len, md5_str);
-    //}
+
+    /*
+    if(D_GENERIC ==1)//
+    {
+    int md5_str_len,j=0;
+    memset(md5_str,0x00,16);
+    unsigned char md5_str_tmp[1000];
+    md5_str_len = 2 + salt_len + user_info->password_len;
+    memset(md5_str_tmp, 0x00, md5_str_len);
+    md5_str_tmp[j++] = 0x03;
+    md5_str_tmp[j++] = 0x01;
+    memcpy(md5_str_tmp + j, salt,salt_len);
+    memcpy(md5_str_tmp + j + salt_len, user_info->password, user_info->password_len);
+    MD5(md5_str_tmp, md5_str_len, md5_str);
+    } */
     memcpy(alive_data1 + i, md5_str, 16);                       //应该是十六位，暂无测试环境
     i += 19;
     memcpy(alive_data1 + i,tail,16);
     i += 16;
 
     memcpy(alive_data1 + i,timep,2);
-    i+=2;
+   i+=6;
+
+
     if(INTERFACE ==1)
     {
         printf("[DEBUG]alive_data1(len=%d):",i);
@@ -482,15 +487,15 @@ void set_alive2_data(unsigned char *alive_data2, int alive_data2_len, unsigned c
                     alive_data2[i++] = 0x12;
                     i += 6;
                     memcpy(alive_data2+i,tail,tail_len);
-                    i += 8;
+                    i += 12;
                     if(type == 3)
                     {
                         memcpy(alive_data2+i,hostip,4);
-                        i += 16;
+                        i += 12;
                     }
                 else
-                    i += 16;   //!!!!!!!!!type=1
-                    
+                    i += 12;   //!!!!!!!!!type=1
+
                 }
 
 
@@ -501,12 +506,12 @@ void set_alive2_data(unsigned char *alive_data2, int alive_data2_len, unsigned c
             uint16_t *ran=(uint16_t *)(alive_data2+i);
             *ran=(uint16_t)rand();
             i+=2;
-                
+
             memcpy(alive_data2+16,kl1_recv_data+16,4);
-                
+
                 if(type>1)
                     memcpy(alive_data2+i+18,"\0\0\0\0",4);
-                
+
                 i+=30;
             }
         if(INTERFACE == 1)
@@ -519,32 +524,33 @@ void set_alive2_data(unsigned char *alive_data2, int alive_data2_len, unsigned c
     }
 
 
-    
+
 void set_logout_data(unsigned char *logout_data, int logout_data_len)
     {
         memset(logout_data, 0x00, logout_data_len);
         // TODO
-        
+
     }
-    
+
 void logout1(int sock, struct sockaddr_in serv_addr, unsigned char *logout_data, int logout_data_len, char *recv_data, int recv_len)
     {
         set_logout_data(logout_data, logout_data_len);
         // TODO
-        
+
         close(sock);
         exit(EXIT_SUCCESS);
     }
-    
+
 void logout_signal(int signum)
     {
         logout_flag = 1;
     }
-    
+
 int main(int argc, char **argv)
     {
         printf("DR.COM TEST!\n");
-        FILE *stderr = fopen("test.txt", "wb");
+
+        //FILE *stderr = fopen("test.txt", "wb");
         int sock,alive_count=0;//定义整形变量sock和ret
         //long ret;
         unsigned char send_data[SEND_DATA_SIZE];                   //定义无符号字符串send_data[1000]  长度为1000
@@ -556,7 +562,7 @@ int main(int argc, char **argv)
         unsigned char globle_md5a[16];
         struct sockaddr_in serv_addr,local_addr;                              //定义结构体sockaddr_in        serv_addr
         struct user_info_pkt user_info;                            //定义结构体user_info_pkt      user_info
-        
+
         sock = socket(AF_INET, SOCK_DGRAM, 0);                     //AF_INET决定了要用ipv4地址（32位的）与端口号（16位的）的组合，。数据报式Socket（SOCK_DGRAM）是一种无连接的Socket，对应于无连接的UDP服务应用
         if (sock < 0) {                                            //sock<0即错误
             fprintf(stderr, "[drcom]: create sock failed.\n");
@@ -565,15 +571,15 @@ int main(int argc, char **argv)
         serv_addr.sin_family = AF_INET;                           //这三句填写sockaddr_in结构
         serv_addr.sin_addr.s_addr = inet_addr(SERVER_ADDR);       //将服务器IP转换成一个长整数型数
         serv_addr.sin_port = htons(SERVER_PORT);                  //将端口高低位互换
-        
+
         local_addr.sin_family = AF_INET;                           //这三句填写sockaddr_in结构
         local_addr.sin_addr.s_addr = htonl(INADDR_ANY);       //将服务器IP转换成一个长整数型数
         local_addr.sin_port = htons(SERVER_PORT);                  //将端口高低位互换
-        
+
         bind(sock,(struct sockaddr *)&(local_addr),sizeof(struct sockaddr_in));
-             
+
         get_user_info(&user_info);                               //为结构体user_info_pkt赋值，包括用户名密码系统版本等及其长度
-        
+
         // challenge data length 20
         if(OFF_LINE_TEST == 0)
             challenge(sock, serv_addr, send_data, 20, recv_data, RECV_DATA_SIZE);                  //challenge,然后返回值4-8位给salt赋值
@@ -591,7 +597,7 @@ int main(int argc, char **argv)
             printf("\n[DEBUG]globle_salt=");
             de(globle_salt,0,4);
         }
-        
+
         printf("------------------------------\n");
         set_login_data(&user_info, send_data, 330, (unsigned char *)(recv_data + 4), 4);       //貌似是319位数据。。。
         memcpy(globle_md5a,send_data+4,16);
@@ -621,10 +627,10 @@ int main(int argc, char **argv)
                 recv_data[36]=0xa9;
                 recv_data[37]=0x01;
                 recv_data[38]=0xcf;
-            
+
             }
         memcpy(package_tail, recv_data + 23, 16);
-        
+
         //memset(package_tail,0xff,16);
         if(INTERFACE == 1)
         {
@@ -641,7 +647,7 @@ int main(int argc, char **argv)
         memset(recv_data, 0x00, RECV_DATA_SIZE);
         if(OFF_LINE_TEST == 0)
             sendto(sock, send_data, 38, 0, (struct sockaddr *)&serv_addr, sizeof(serv_addr));
-       
+
         keepaliverecv:
         if(OFF_LINE_TEST == 0)
             recvfrom(sock, recv_data, RECV_DATA_SIZE, 0, NULL, NULL);
@@ -658,22 +664,22 @@ int main(int argc, char **argv)
             de((unsigned char *)recv_data,0,64);
             printf("\n");
         }
-            
-            
+
+
             int mtype=0;                                              //定义整形变量mtype=0
             if(*recv_data==0x4d)                                      //如果ka1_recv第一个字符为4d，接收到需要跳过的信息
             {
                 printf("Server sent a message,ignore it\n");
                 goto keepaliverecv;                                   //继续跳转到上方接受一个数据包
             }
-            
+
             else if(*recv_data==0x07)                                 //如果接受数据首字符为07，显示ka1成功
             {
                 printf("[keep－alive] keep alive 1 success\n");
-                
+
                 while(recv_data[5]<4)
                 {
-                    
+
                     if(recv_data[2]==0x10&&recv_data[3]==0x00)//rok:1000
                     {
                         if(INTERFACE)
@@ -705,45 +711,50 @@ int main(int argc, char **argv)
                         {
                             sendto(sock, (char*)&send_data,alive2_data_len, 0, (struct sockaddr *)&serv_addr,sizeof(struct sockaddr));
                         printf("[keep-alive2]send1");
-                        
+
                         recvfrom(sock, recv_data, RECV_DATA_SIZE, 0, NULL, NULL);
                         }
                         else
                         {
                             recv_data[0] = 0x07;
                             recv_data[2] = 0x28;
-                            
+
                         }
                         printf("[keep-alive2]recv1");
                         do
                         {
-                            if(*recv_data ==0x07 && recv_data[2] == 0x28)
+                            if(recv_data[0] ==0x07 && recv_data[2] == 0x28)
                                 break;
-                            else if(recv_data[2] == 0x10)
+                            else if(recv_data[2] == 0x10 && recv_data[0] == 0x07)
                             {
+
                                 printf("[keep-alive2] recv file, resending..");
                                 alive_count += 1;
-                                set_alive2_data(send_data, alive2_data_len, package_tail_empty, 4, alive_count,1,(unsigned char *)recv_data,1);
-                                sendto(sock, (char*)&send_data,alive2_data_len, 0, (struct sockaddr *)&serv_addr,sizeof(struct sockaddr));
+                                //set_alive2_data(send_data, alive2_data_len, package_tail_empty, 4, alive_count,1,(unsigned char *)recv_data,1);
+                                //sendto(sock, (char*)&send_data,alive2_data_len, 0, (struct sockaddr *)&serv_addr,sizeof(struct sockaddr));
+
+break;
                             }
                             else
-                                printf("[keep-alive2] recv1/unexpected");
 
+                                printf("[keep-alive2] recv1/unexpected");
+                      set_alive2_data(send_data, alive2_data_len, package_tail_empty, 4, alive_count,1,(unsigned char *)recv_data,1);
+                sendto(sock, (char*)&send_data,alive2_data_len, 0, (struct sockaddr *)&serv_addr,sizeof(struct sockaddr));
                         }while(1);
                         if(INTERFACE ==1)
                         {
                             printf("\n[DEBUG]kl2_recv1=");
                             de((unsigned char *)recv_data,0,40);
                         }
-                        
-                        
+
+
                         //02
                         set_alive2_data(send_data, alive2_data_len, package_tail_empty, 4, alive_count,1,(unsigned char *)recv_data,0);
                         memset(recv_data, 0x00, RECV_DATA_SIZE);
                         if(OFF_LINE_TEST ==0)
                         sendto(sock, (char*)&send_data,alive2_data_len, 0, (struct sockaddr *)&serv_addr,sizeof(struct sockaddr));
                         printf("[keep-alive2]send2");
-                        
+
                         do
                         {
                             if(OFF_LINE_TEST ==0)
@@ -774,8 +785,8 @@ int main(int argc, char **argv)
                             printf("\n[DEBUG]package_tail2=");
                             de(package_tail2,0,4);
                             printf("\n");
-                        
-                        
+
+
                         //03
                         set_alive2_data(send_data, alive2_data_len, package_tail2, 4, alive_count,3,(unsigned char *)recv_data,0);
                          if(OFF_LINE_TEST ==0)
@@ -812,14 +823,25 @@ int main(int argc, char **argv)
                         printf("\n[DEBUG]package_tail2=");
                         de(package_tail2,0,4);
                         printf("\n");
-                        
-                        
-                        
+
+
+
                         printf("\n[keep-alive2] keep-alive2 loop was in daemon.");
                         uint8_t alive_count2 = alive_count;
-                        do
+                        while(1)
                         {
                             printf("\n[DEBUG]LOOPING........");
+sleep(20);
+                            printf("0");
+                            set_alive1_data(send_data, alive1_data_len, package_tail, globle_salt,4,&user_info,globle_md5a);
+                            memset(recv_data, 0x00, RECV_DATA_SIZE);
+
+                            if(OFF_LINE_TEST ==0)
+sendto(sock, send_data, 38, 0, (struct sockaddr *)&serv_addr, sizeof(serv_addr));
+printf("\n[keep-alive1]send");
+                            if(OFF_LINE_TEST ==0)
+                                recvfrom(sock, recv_data, RECV_DATA_SIZE, 0, NULL, NULL);
+                                printf("\n[keep-alive1]receive\n");
                             set_alive2_data(send_data, alive2_data_len, package_tail2, 4, alive_count2,1,(unsigned char *)recv_data,0);
                             if(OFF_LINE_TEST ==0)
                                 sendto(sock, (char*)&send_data,alive2_data_len, 0, (struct sockaddr *)&serv_addr,sizeof(struct sockaddr));
@@ -828,8 +850,8 @@ int main(int argc, char **argv)
                                 recvfrom(sock, recv_data, RECV_DATA_SIZE, 0, NULL, NULL);
                             printf("\n[keep-alive2]receive1");
                             memcpy(package_tail2,recv_data+16,4);
-                           
-                            
+
+
                             set_alive2_data(send_data, alive2_data_len, package_tail2, 4, alive_count2+1,3,(unsigned char *)recv_data,0);
                             if(OFF_LINE_TEST ==0)
                                 sendto(sock, (char*)&send_data,alive2_data_len, 0, (struct sockaddr *)&serv_addr,sizeof(struct sockaddr));
@@ -838,24 +860,15 @@ int main(int argc, char **argv)
                                 recvfrom(sock, recv_data, RECV_DATA_SIZE, 0, NULL, NULL);
                             printf("\n[keep-alive2]receive2");
                             memcpy(package_tail2,recv_data+16,4);
-                            
-                            alive_count2 +=2;
-                            
-                            sleep(20);
-                            
-                            set_alive1_data(send_data, alive1_data_len, package_tail2, globle_salt,4,&user_info,globle_md5a);
-                            memset(recv_data, 0x00, RECV_DATA_SIZE);
-                            if(OFF_LINE_TEST ==0)
-                                sendto(sock, send_data, 38, 0, (struct sockaddr *)&serv_addr, sizeof(serv_addr));
-                            printf("\n[keep-alive1]send");
-                            if(OFF_LINE_TEST ==0)
-                                recvfrom(sock, recv_data, RECV_DATA_SIZE, 0, NULL, NULL);
-                            printf("\n[keep-alive1]receive\n");
 
-                        }while(1);
-                        
+                            alive_count2 +=2;
+
+
+
+                        }
+
                     }
-                    
+
                     else                     //cust only
                     {
                         set_alive2_data(send_data, alive2_data_len, package_tail, 16, alive_count,mtype,(unsigned char *)recv_data,0);
@@ -877,22 +890,25 @@ int main(int argc, char **argv)
                         de((unsigned char *)&recv_data,0,40);
                         printf("\n");
                         }
-                        
+
                     }
                 }
-                
+
             }
-            
-            
+
+
             sleep(5);
- 
-            
-        } while (logout_flag != 1);                                                                                       
-        
+
+
+        } while (logout_flag != 1);
+
         // logout, data_length 80 or ?
         memset(recv_data, 0x00, RECV_DATA_SIZE);
+        printf("logout");
         logout1(sock, serv_addr, send_data, 80, recv_data, RECV_DATA_SIZE);
-        
+
         return 0;
     }
-    
+
+
+

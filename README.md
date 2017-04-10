@@ -1,6 +1,6 @@
 DRCOM(D)  
 为二进制版drcom（D版）登录器无需python 
-源码来自https://github.com/drcoms/drcom-generic/tree/master/c_version并进行BUG修复及协议修改  
+源码来自https://github.com/drcoms/drcom-generic/tree/master/c_version 并进行BUG修复及协议修改  
 源码可以在openwrt上运行目前提供MT7620的二进制文件（opdrc）  
 更改列表： 
 1.修复死循环  

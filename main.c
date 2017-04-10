@@ -2,7 +2,7 @@
 /*
  *  dr.com 5.20d for cust/genenal_d
  *  test v1.3.7
- *  作者 qoddi<hnczp@icloud.com>
+ *  作者 qoddi<hnczp@icloud.com
  *  这是一个MOD的版本，也就是参考了以下Latyas <latyas@gmail.com>的两部分共同完成的一个版本
  *  派森客户端https://github.com/drcoms/drcom-generic
  *  jlu-drcom-clienthttps://github.com/drcoms/jlu-drcom-client/
@@ -828,11 +828,14 @@ break;
 
                         printf("\n[keep-alive2] keep-alive2 loop was in daemon.");
                         uint8_t alive_count2 = alive_count;
+                        //socket timeout
+                        struct timeval timeout={3,0};//3s
+    setsockopt(sock,SOL_SOCKET,SO_SNDTIMEO,(const char*)&timeout,sizeof(timeout));
+    setsockopt(sock,SOL_SOCKET,SO_RCVTIMEO,(const char*)&timeout,sizeof(timeout));
                         while(1)
                         {
                             printf("\n[DEBUG]LOOPING........");
-sleep(20);
-                            printf("0");
+                            sleep(15);
                             set_alive1_data(send_data, alive1_data_len, package_tail, globle_salt,4,&user_info,globle_md5a);
                             memset(recv_data, 0x00, RECV_DATA_SIZE);
 
@@ -841,14 +844,16 @@ sendto(sock, send_data, 38, 0, (struct sockaddr *)&serv_addr, sizeof(serv_addr))
 printf("\n[keep-alive1]send");
                             if(OFF_LINE_TEST ==0)
                                 recvfrom(sock, recv_data, RECV_DATA_SIZE, 0, NULL, NULL);
-                                printf("\n[keep-alive1]receive\n");
+                                printf("\n[keep-alive1]receive\n ");
+                                de((unsigned char *)recv_data,0,40);
                             set_alive2_data(send_data, alive2_data_len, package_tail2, 4, alive_count2,1,(unsigned char *)recv_data,0);
                             if(OFF_LINE_TEST ==0)
                                 sendto(sock, (char*)&send_data,alive2_data_len, 0, (struct sockaddr *)&serv_addr,sizeof(struct sockaddr));
                             printf("\n[keep-alive2]send1");
                             if(OFF_LINE_TEST ==0)
                                 recvfrom(sock, recv_data, RECV_DATA_SIZE, 0, NULL, NULL);
-                            printf("\n[keep-alive2]receive1");
+                            printf("\n[keep-alive2]receive1 ");
+                            de((unsigned char *)recv_data,0,40);
                             memcpy(package_tail2,recv_data+16,4);
 
 
@@ -857,8 +862,9 @@ printf("\n[keep-alive1]send");
                                 sendto(sock, (char*)&send_data,alive2_data_len, 0, (struct sockaddr *)&serv_addr,sizeof(struct sockaddr));
                             printf("\n[keep-alive2]send2");
                             if(OFF_LINE_TEST ==0)
-                                recvfrom(sock, recv_data, RECV_DATA_SIZE, 0, NULL, NULL);
-                            printf("\n[keep-alive2]receive2");
+                            recvfrom(sock, recv_data, RECV_DATA_SIZE, 0, NULL, NULL);
+                            printf("\n[keep-alive2]receive2 ");
+                            de((unsigned char *)recv_data,0,40);
                             memcpy(package_tail2,recv_data+16,4);
 
                             alive_count2 +=2;

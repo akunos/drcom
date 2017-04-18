@@ -6,6 +6,7 @@ DRCOM(D)
 1.修复死循环  
 2.适配协议  
 3.加入socket超时解决阻塞  
-4.Delete offline and cust   
+4.Delete offline and cust	
+5.加入掉线检测以及自动重启脚本	   
 欢迎各位开发者加入我们   
 代码维护：阿坤 email：773692200@qq.com QQ773692200  

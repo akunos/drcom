@@ -12,8 +12,9 @@
 #include <fcntl.h>
 #include <signal.h>
 #include <errno.h>
+#include <time.h>
 #include "md5.h"
-
+int main();
 // 必须修改，帐号密码和 mac 地址是绑定的
 char user[] = "1502000744";
 char pass[] = "19960314";
@@ -25,8 +26,8 @@ char auth_version[2] = {0x0a,0x00};
 char ipdog[1]= {0x01};
 char ccs[1]= {0x20};
 char adpnum[1]= {0x04};
-
-
+int reconnect=1;//重连
+int restart=1800;//1800 restart
 // 不一定要修改
 char host[] = "NOTE7";
 char os[] = "Windows 8.1";
@@ -66,6 +67,7 @@ int logout_flag = 0;
 
 void de(unsigned char *data,int offset,int len)//
 {
+
     int i=0;
     printf("\n");
     {
@@ -495,7 +497,14 @@ void logout1(int sock, struct sockaddr_in serv_addr, unsigned char *logout_data,
     set_logout_data(logout_data, logout_data_len);
     // TODO
     close(sock);
-    exit(EXIT_SUCCESS);
+    if(reconnect==1)
+    {
+        main();
+    }
+    else
+    {
+        exit(EXIT_SUCCESS);
+    }
 }
 
 void logout_signal(int signum)
@@ -506,7 +515,11 @@ void logout_signal(int signum)
 int main(int argc, char **argv)
 {
     printf("DR.COM TEST!\n");
-
+    int timeout1=0;
+    int i=0;
+    int t=0;
+    int rec=-1;
+    int r=0;
     //FILE *stderr = fopen("test.txt", "wb");
     int sock,alive_count=0;//定义整形变量sock和ret
     //long ret;
@@ -716,8 +729,14 @@ keepaliverecv:
                 setsockopt(sock,SOL_SOCKET,SO_RCVTIMEO,(const char*)&timeout,sizeof(timeout));
                 while(1)
                 {
-                    printf("\n[DEBUG]LOOPING........");
-                    sleep(15);
+                    time_t t;
+                    char *s;
+                    t=time(&t);
+                    s=ctime(&t);
+                    t++;
+
+                    sleep(18);
+                    printf("\n[DEBUG]LOOPING:%s",s);
                     set_alive1_data(send_data, alive1_data_len, package_tail, globle_salt,4,&user_info,globle_md5a);
                     memset(recv_data, 0x00, RECV_DATA_SIZE);
                     sendto(sock, send_data, 38, 0, (struct sockaddr *)&serv_addr, sizeof(serv_addr));
@@ -735,24 +754,56 @@ keepaliverecv:
                     set_alive2_data(send_data, alive2_data_len, package_tail2, 4, alive_count2+1,3,(unsigned char *)recv_data,0);
                     sendto(sock, (char*)&send_data,alive2_data_len, 0, (struct sockaddr *)&serv_addr,sizeof(struct sockaddr));
                     printf("\n[keep-alive2]send2");
-                    recvfrom(sock, recv_data, RECV_DATA_SIZE, 0, NULL, NULL);
+                    rec=recvfrom(sock, recv_data, RECV_DATA_SIZE, 0, NULL, NULL);
+                    if (rec<=0)//掉线检测
+                    {
+                        timeout1++;
+                        printf("timeout:%d\n",timeout1);
+
+                        if(timeout1==5)
+                        {
+                            printf("\ntimeout!!!!\n");
+                            logout1(sock, serv_addr, send_data, 80, recv_data, RECV_DATA_SIZE);
+                            return 0;
+                            //exit(1);
+                            //logout_flag = 1;
+                            //break;
+                        }
+                    }
+                    else
+                    {
+                        timeout1=0;
+                    }
+
+
                     printf("\n[keep-alive2]receive2 ");
                     de((unsigned char *)recv_data,0,40);
                     memcpy(package_tail2,recv_data+16,4);
                     alive_count2 +=2;
+                    if(restart>0)
+                    {
+                        r++;
+                        if(r==restart)
+                        {
+                            system("/bin/opdrc.sh");
+                            exit(1);
+                        }
+                    }
                 }
-
-
-
-
             }
+
+
+
+
+
+
 
         }
 
         sleep(5);
     }
     while (logout_flag != 1);
-    // logout, data_length 80 or ?
+// logout, data_length 80 or ?
     memset(recv_data, 0x00, RECV_DATA_SIZE);
     printf("logout");
     logout1(sock, serv_addr, send_data, 80, recv_data, RECV_DATA_SIZE);

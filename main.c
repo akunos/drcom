@@ -519,6 +519,8 @@ int main(int argc, char **argv)
     int i=0;
     int t=0;
     int rec=-1;
+int rec2=-1;
+int rec3=-1;
     int r=0;
     //FILE *stderr = fopen("test.txt", "wb");
     int sock,alive_count=0;//定义整形变量sock和ret
@@ -741,24 +743,24 @@ keepaliverecv:
                     memset(recv_data, 0x00, RECV_DATA_SIZE);
                     sendto(sock, send_data, 38, 0, (struct sockaddr *)&serv_addr, sizeof(serv_addr));
                     printf("\n[keep-alive1]send");
-                    recvfrom(sock, recv_data, RECV_DATA_SIZE, 0, NULL, NULL);
+                    rec=recvfrom(sock, recv_data, RECV_DATA_SIZE, 0, NULL, NULL);
                     printf("\n[keep-alive1]receive\n ");
                     de((unsigned char *)recv_data,0,40);
                     set_alive2_data(send_data, alive2_data_len, package_tail2, 4, alive_count2,1,(unsigned char *)recv_data,0);
                     sendto(sock, (char*)&send_data,alive2_data_len, 0, (struct sockaddr *)&serv_addr,sizeof(struct sockaddr));
                     printf("\n[keep-alive2]send1");
-                    recvfrom(sock, recv_data, RECV_DATA_SIZE, 0, NULL, NULL);
+                    rec2=recvfrom(sock, recv_data, RECV_DATA_SIZE, 0, NULL, NULL);
                     printf("\n[keep-alive2]receive1 ");
                     de((unsigned char *)recv_data,0,40);
                     memcpy(package_tail2,recv_data+16,4);
                     set_alive2_data(send_data, alive2_data_len, package_tail2, 4, alive_count2+1,3,(unsigned char *)recv_data,0);
                     sendto(sock, (char*)&send_data,alive2_data_len, 0, (struct sockaddr *)&serv_addr,sizeof(struct sockaddr));
                     printf("\n[keep-alive2]send2");
-                    rec=recvfrom(sock, recv_data, RECV_DATA_SIZE, 0, NULL, NULL);
-                    if (rec<=0)//掉线检测
+                    rec3=recvfrom(sock, recv_data, RECV_DATA_SIZE, 0, NULL, NULL);
+                    if (rec<=0||rec2<=0||rec3<=0)//掉线检测
                     {
                         timeout1++;
-                        printf("timeout:%d\n",timeout1);
+                        printf("\ntimeout:%d\n",timeout1);
 
                         if(timeout1==5)
                         {

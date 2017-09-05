@@ -41,11 +41,22 @@ int main(int argc, char **argv) {
           /*分割字符串*/
             p=strtok(s, delim);
             if(p)
-            printf("%s", del_both_trim(p));
-
-            while ((p = strtok(NULL, delim)))
+            printf("%s:", del_both_trim(p));
+            if(del_both_trim(p)=="username")
+            {
+                          while ((p = strtok(NULL, delim)))
             printf("%s ", del_both_trim(p));
-            printf("\n");
+            printf("1");
+            }else if(del_both_trim(p)=="password")
+            {
+                while ((p = strtok(NULL, delim)))
+            printf("%s ", del_both_trim(p));
+            }else
+            {
+                printf("err");
+            }
+
+
         }
     }
     return 0;

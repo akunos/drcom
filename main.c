@@ -16,8 +16,8 @@
 #include "md5.h"
 int main();
 // 必须修改，帐号密码和 mac 地址是绑定的
-char user[] = "1502000744";
-char pass[] = "19960314";
+char user[] = "1502000704";
+char pass[] = "19960322";
 unsigned char hostip[4]= {10,207,56,21};
 unsigned char dhcpip[4]= {10,207,56,254};
 uint64_t mac = 0x207693300da5; // echo 0x`ifconfig eth | egrep -io "([0-9a-f]{2}:){5}[0-9a-f]{2}" | tr -d ":"`

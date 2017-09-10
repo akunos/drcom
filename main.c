@@ -45,8 +45,8 @@ int os_len = sizeof(os) - 1;
 
 // TODO 增加从文件读取参数
 
-char SERVER_ADDR[]="10.10.4.110";
-int SERVER_PORT=61440;
+char SERVER_ADDR[]="";
+int SERVER_PORT;
 
 #define RECV_DATA_SIZE 1000
 #define SEND_DATA_SIZE 1000
@@ -75,6 +75,8 @@ void init()//初始化
 {
 	strcpy(user,username);
 	strcpy(pass,password);
+	strcpy(SERVER_ADDR,server_ip);
+	SERVER_PORT=server_port;
 }
 void de(unsigned char *data,int offset,int len)//
 {

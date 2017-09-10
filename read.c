@@ -58,6 +58,7 @@ if(strcmp(str,"username")==0)
 while ((p = strtok(NULL, delim)))
 strcpy(usr,del_both_trim(p));
 printf("%s", usr);
+usr[strlen(usr)-1]='0';
 strcpy(username,usr);
 }else if(strcmp(str,"password")==0)
 {
@@ -65,6 +66,7 @@ strcpy(username,usr);
 while ((p = strtok(NULL, delim)))
 strcpy(psd,del_both_trim(p));
 printf("%s", psd);
+psd[strlen(psd)-1]='\0';
 strcpy(password,psd);
 }else if(strcmp(str,"server_ip")==0)
 {
@@ -72,6 +74,7 @@ strcpy(password,psd);
 while ((p = strtok(NULL, delim)))
 strcpy(s_ip,del_both_trim(p));
 printf("%s", s_ip);
+s_ip[strlen(s_ip)-1]='\0';
 strcpy(server_ip,s_ip);
 }else if(strcmp(str,"server_port")==0)
 {
@@ -79,6 +82,7 @@ strcpy(server_ip,s_ip);
 while ((p = strtok(NULL, delim)))
 strcpy(s_port,del_both_trim(p));
 printf("%s", s_port);
+s_port[strlen(s_port)-1]='\0';
 server_port = *(int*)s_port;
 }
 

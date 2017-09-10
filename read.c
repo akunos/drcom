@@ -3,6 +3,11 @@
 #include <string.h>
 #include <assert.h>
 #include <ctype.h>
+#include "read.h"
+char username[]="";
+char password[]="";
+char server_ip[]="";
+int server_port;
 /*   删除左边的空格   */
 char * del_left_trim(char *str) {
     assert(str != NULL);
@@ -20,7 +25,7 @@ char * del_both_trim(char * str) {
     return szOutput;
 }
 /*主函数*/
-int main(int argc, char **argv) {
+void readconf() {
     FILE * fp = NULL;
    /*打开配置文件a.txt*/
     fp = fopen("drcom.conf", "r");
@@ -31,6 +36,11 @@ int main(int argc, char **argv) {
     char * delim = "=";
     char * p;
     char ch;
+    char str[]="";
+    char usr[]="";
+    char psd[]="";
+    char s_ip[]="";
+    char s_port[]="";
      while (!feof(fp)) {
         if ((p = fgets(buf, sizeof(buf), fp)) != NULL) {
             strcpy(s, p);
@@ -40,24 +50,39 @@ int main(int argc, char **argv) {
                 continue;
           /*分割字符串*/
             p=strtok(s, delim);
-            if(p)
-            printf("%s:", del_both_trim(p));
-            if(del_both_trim(p)=="username")
-            {
-                          while ((p = strtok(NULL, delim)))
-            printf("%s ", del_both_trim(p));
-            printf("1");
-            }else if(del_both_trim(p)=="password")
-            {
-                while ((p = strtok(NULL, delim)))
-            printf("%s ", del_both_trim(p));
-            }else
-            {
-                printf("err");
-            }
+            if(p){
+            	strcpy(str,p);
+if(strcmp(str,"username")==0)
+{
+            	printf("usernmae:");
+while ((p = strtok(NULL, delim)))
+strcpy(usr,del_both_trim(p));
+printf("%s", usr);
+strcpy(username,usr);
+}else if(strcmp(str,"password")==0)
+{
+	           	printf("password:");
+while ((p = strtok(NULL, delim)))
+strcpy(psd,del_both_trim(p));
+printf("%s", psd);
+strcpy(password,psd);
+}else if(strcmp(str,"server_ip")==0)
+{
+	           	printf("server_ip:");
+while ((p = strtok(NULL, delim)))
+strcpy(s_ip,del_both_trim(p));
+printf("%s", s_ip);
+strcpy(server_ip,s_ip);
+}else if(strcmp(str,"server_port")==0)
+{
+	           	printf("server_port:");
+while ((p = strtok(NULL, delim)))
+strcpy(s_port,del_both_trim(p));
+printf("%s", s_port);
+server_port = *(int*)s_port;
+}
 
-
-        }
-    }
-    return 0;
+}
+}
+}
 }

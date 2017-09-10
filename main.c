@@ -14,10 +14,17 @@
 #include <errno.h>
 #include <time.h>
 #include "md5.h"
+#include "read.h"
 int main();
+void readconf();
+void init();
+extern char username[];
+extern char password[];
+extern char server_ip[];
+extern int server_port;
 // 必须修改，帐号密码和 mac 地址是绑定的
-char user[] = "1502000704";
-char pass[] = "19960322";
+char user[] = "";
+char pass[] = "";
 unsigned char hostip[4]= {10,207,56,21};
 unsigned char dhcpip[4]= {10,207,56,254};
 uint64_t mac = 0x207693300da5; // echo 0x`ifconfig eth | egrep -io "([0-9a-f]{2}:){5}[0-9a-f]{2}" | tr -d ":"`
@@ -38,8 +45,8 @@ int os_len = sizeof(os) - 1;
 
 // TODO 增加从文件读取参数
 
-#define SERVER_ADDR "10.10.4.110"
-#define SERVER_PORT 61440
+char SERVER_ADDR[]="10.10.4.110";
+int SERVER_PORT=61440;
 
 #define RECV_DATA_SIZE 1000
 #define SEND_DATA_SIZE 1000
@@ -64,7 +71,11 @@ struct user_info_pkt
 
 /* signal process flag */
 int logout_flag = 0;
-
+void init()//初始化
+{
+	strcpy(user,username);
+	strcpy(pass,password);
+}
 void de(unsigned char *data,int offset,int len)//
 {
 
@@ -514,6 +525,8 @@ void logout_signal(int signum)
 
 int main(int argc, char **argv)
 {
+	readconf();
+	init();
     printf("DR.COM TEST!\n");
     int timeout1=0;
     int i=0;

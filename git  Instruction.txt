@@ -3,6 +3,6 @@ git add README.md
 git add .
 git commit -m 'xxxx'
 git remote add https://github.com/akunos/drcom.git
-git pull origin master
-git push origin master
+git pull origin master 下载远程分支
+git push origin master 上传远程分支
 

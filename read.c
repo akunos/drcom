@@ -4,9 +4,9 @@
 #include <assert.h>
 #include <ctype.h>
 #include "read.h"
-char username[]="";
-char password[]="";
-char server_ip[]="";
+char username1[30];
+char password1[30];
+char server_ip[30];
 int server_port;
 /*   删除左边的空格   */
 char * del_left_trim(char *str) {
@@ -36,11 +36,11 @@ void readconf() {
     char * delim = "=";
     char * p;
     char ch;
-    char str[]="";
-    char usr[]="";
-    char psd[]="";
-    char s_ip[]="";
-    char s_port[]="";
+    char str[30];
+    char usr[30];
+    char psd[30];
+    char s_ip[30];
+    int s_port;
      while (!feof(fp)) {
         if ((p = fgets(buf, sizeof(buf), fp)) != NULL) {
             strcpy(s, p);
@@ -54,12 +54,12 @@ void readconf() {
             	strcpy(str,p);
 if(strcmp(str,"username")==0)
 {
-            	printf("usernmae:");
+            	printf("username:");
 while ((p = strtok(NULL, delim)))
 strcpy(usr,del_both_trim(p));
 printf("%s", usr);
-usr[strlen(usr)-1]='0';
-strcpy(username,usr);
+usr[strlen(usr)-1]='\0';
+strcpy(username1,usr);
 }else if(strcmp(str,"password")==0)
 {
 	           	printf("password:");
@@ -67,7 +67,7 @@ while ((p = strtok(NULL, delim)))
 strcpy(psd,del_both_trim(p));
 printf("%s", psd);
 psd[strlen(psd)-1]='\0';
-strcpy(password,psd);
+strcpy(password1,psd);
 }else if(strcmp(str,"server_ip")==0)
 {
 	           	printf("server_ip:");
@@ -80,10 +80,13 @@ strcpy(server_ip,s_ip);
 {
 	           	printf("server_port:");
 while ((p = strtok(NULL, delim)))
-strcpy(s_port,del_both_trim(p));
-printf("%s", s_port);
-s_port[strlen(s_port)-1]='\0';
-server_port = *(int*)s_port;
+//strcpy(s_port,del_both_trim(p));
+//printf("%s", s_port);
+//s_port[strlen(s_port)-1]='\0';
+s_port=atoi(del_both_trim(p));
+//server_port = *(int*)s_port;
+printf("%d\n",s_port);
+server_port=s_port;
 }
 
 }

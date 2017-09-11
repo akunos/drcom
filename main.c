@@ -15,16 +15,16 @@
 #include <time.h>
 #include "md5.h"
 #include "read.h"
-int main();
 void readconf();
-void init();
-extern char username[];
-extern char password[];
-extern char server_ip[];
+void init1();
+int main();
+extern char username1[30];
+extern char password1[30];
+extern char server_ip[30];
 extern int server_port;
 // 必须修改，帐号密码和 mac 地址是绑定的
-char user[] = "";
-char pass[] = "";
+char user[30];
+char pass[30];
 unsigned char hostip[4]= {10,207,56,21};
 unsigned char dhcpip[4]= {10,207,56,254};
 uint64_t mac = 0x207693300da5; // echo 0x`ifconfig eth | egrep -io "([0-9a-f]{2}:){5}[0-9a-f]{2}" | tr -d ":"`
@@ -38,14 +38,13 @@ int restart=1800;//1800 restart
 // 不一定要修改
 char host[] = "123";
 char os[] = "Windows 10";
-int user_len = sizeof(user) - 1;
-int pass_len = sizeof(pass) - 1;
-int host_len = sizeof(host) - 1;
-int os_len = sizeof(os) - 1;
-
+int user_len;
+int pass_len;
+int host_len;
+int os_len;
 // TODO 增加从文件读取参数
 
-char SERVER_ADDR[]="";
+char SERVER_ADDR[30];
 int SERVER_PORT;
 
 #define RECV_DATA_SIZE 1000
@@ -71,11 +70,15 @@ struct user_info_pkt
 
 /* signal process flag */
 int logout_flag = 0;
-void init()//初始化
+void init1()//初始化
 {
-	strcpy(user,username);
-	strcpy(pass,password);
-	strcpy(SERVER_ADDR,server_ip);
+    strcpy(pass,password1);
+	strcpy(user,username1);
+    pass_len=strlen(pass);
+    user_len=strlen(user);
+    host_len=strlen(host);
+    os_len=strlen(os);
+	strncpy(SERVER_ADDR,server_ip,strlen(server_ip));
 	SERVER_PORT=server_port;
 }
 void de(unsigned char *data,int offset,int len)//
@@ -525,10 +528,10 @@ void logout_signal(int signum)
     logout_flag = 1;
 }
 
-int main(int argc, char **argv)
+int main()
 {
 	readconf();
-	init();
+	init1();
     printf("DR.COM TEST!\n");
     int timeout1=0;
     int i=0;
@@ -587,7 +590,6 @@ int rec3=-1;
     memset(recv_data, 0x00, RECV_DATA_SIZE);                                               //把challenge的recv_data清零
     login1(sock, serv_addr, send_data, 330, recv_data, RECV_DATA_SIZE);                     //登陆
     memcpy(package_tail, recv_data + 23, 16);
-
     //memset(package_tail,0xff,16);
     if(INTERFACE == 1)
     {
@@ -780,9 +782,8 @@ keepaliverecv:
                         if(timeout1==5)
                         {
                             printf("\ntimeout!!!!\n");
-                            logout1(sock, serv_addr, send_data, 80, recv_data, RECV_DATA_SIZE);
-                            return 0;
-                            //exit(1);
+                            system("$(cd `dirname $0`; pwd)/opdrc.sh &");
+                            exit(1);
                             //logout_flag = 1;
                             //break;
                         }
@@ -802,7 +803,7 @@ keepaliverecv:
                         r++;
                         if(r==restart)
                         {
-                            system("/bin/opdrc.sh");
+                            system("$(cd `dirname $0`; pwd)/opdrc.sh &");
                             exit(1);
                         }
                     }

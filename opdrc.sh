@@ -1,3 +1,2 @@
-rm -f /log.txt
 killall opdrc
-nice -n -17 /bin/opdrc > /log.txt &
+nice -n -17 $(cd `dirname $0`; pwd)/opdrc &
